@@ -32,9 +32,13 @@ a prefix: `$REGISTRY/myimage:tag`, never `$REGISTRY:tag` alone.
 ## Rules
 
 - **Always `--push`** — remote builders cannot load images locally; `--load` will fail.
-- **Never override `$DOCKER_CONFIG`** or pass `--config`. The credential helper
-  (`docker-credential-k8s-sa`) is pre-wired via `/etc/enzarb/docker/config.json`.
-  Overriding it causes 401s on push.
+- **Push credentials are automatic — do not wire them up.** `docker buildx` reads
+  `$DOCKER_CONFIG`, resolves credentials via the `docker-credential-k8s-sa` helper,
+  and forwards the auth token to buildkitd inline in the build request. No `--secret`,
+  `docker login`, or extra flags are needed.
+- **Never override `$DOCKER_CONFIG`** or pass `--config`. The credential helper is
+  pre-wired via `/etc/enzarb/docker/config.json`. Overriding it loses the credentials
+  and push will 401.
 - **No `--builder` flag needed** — the `enzarb` builder is set as the default on
   pod start.
 
